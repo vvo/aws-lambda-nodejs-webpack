@@ -1,0 +1,122 @@
+{
+  "name": "aws-lambda-nodejs-rollup",
+  "version": "0.0.0-development",
+  "private": false,
+  "description": "CDK Constructs for AWS Lambda in Node.js using rollup.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vvo/aws-lambda-nodejs-rollup"
+  },
+  "license": "MIT",
+  "author": "Vincent Voyer",
+  "main": "dist/index.js",
+  "module": "dist/aws-lambda-nodejs-rollup.esm.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "src/",
+    "dist/",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsdx build",
+    "format": "tsdx lint --fix",
+    "lint": "tsdx lint",
+    "prepublishOnly": "tsdx build",
+    "semantic-release": "semantic-release",
+    "start": "tsdx watch",
+    "test": "tsdx test"
+  },
+  "babel": {
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "targets": {
+            "node": "12"
+          }
+        }
+      ]
+    ]
+  },
+  "prettier": {
+    "trailingComma": "all"
+  },
+  "dependencies": {
+    "@rollup/plugin-commonjs": "14.0.0",
+    "@rollup/plugin-json": "4.1.0",
+    "@rollup/plugin-node-resolve": "8.4.0",
+    "rollup": "2.22.1"
+  },
+  "devDependencies": {
+    "@aws-cdk/aws-lambda": "^1.53.0",
+    "@aws-cdk/core": "^1.53.0",
+    "eslint-plugin-import": "2.22.0",
+    "eslint-plugin-jest": "23.18.0",
+    "prettier-plugin-packagejson": "2.2.5",
+    "semantic-release": "17.1.1",
+    "semantic-release-cli": "5.3.1",
+    "tsdx": "0.13.2",
+    "tslib": "2.0.0",
+    "typescript": "3.9.7"
+  },
+  "peerDependencies": {},
+  "engines": {
+    "node": ">=12"
+  },
+  "eslint": {
+    "env": {
+      "es6": true,
+      "jest": true,
+      "node": true
+    },
+    "parser": "babel-eslint",
+    "parserOptions": {
+      "ecmaVersion": 2019,
+      "sourceType": "module"
+    },
+    "sideEffects": false,
+    "extends": [
+      "eslint:recommended",
+      "plugin:jest/recommended",
+      "plugin:import/recommended"
+    ],
+    "rules": {
+      "arrow-body-style": [
+        "error",
+        "always"
+      ],
+      "curly": "error",
+      "import/order": [
+        "error",
+        {
+          "newlines-between": "always"
+        }
+      ]
+    },
+    "settings": {
+      "import/extensions": [
+        ".ts"
+      ],
+      "import/resolver": {
+        "node": {
+          "extensions": [
+            ".ts"
+          ]
+        }
+      }
+    }
+  },
+  "renovate": {
+    "extends": [
+      "config:js-lib",
+      ":automergePatch",
+      ":automergeBranch",
+      ":automergePatch",
+      ":automergeBranch",
+      ":automergeLinters",
+      ":automergeTesters",
+      ":automergeTypes"
+    ]
+  }
+}
