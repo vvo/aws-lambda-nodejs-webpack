@@ -127,6 +127,7 @@ export class NodejsFunction extends lambda.Function {
     if (rollup.status !== 0) {
       console.error("Rollup had an error bundling.");
       console.error(rollup.output.map(out => out?.toString()));
+      process.exit(1);
     }
 
     const entryWithoutExtension = path.join(
