@@ -79,6 +79,8 @@ This is a list of features I thought could be interesting to users. If you need 
 - [ ] Ask CDK team if this could live under their repositories
 - [ ] Allow native modules, with option `nativeModules`. They would have to be installed into a temp folder with `npm_config_arch` and `npm_config_platform` and aliased in rollup configuration
 - [ ] Add tests
+- [ ] Monorepo support
+- [ ] Other ideas?
 
 ## How to make changes and test locally
 
