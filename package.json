@@ -22,10 +22,10 @@
     "build": "tsdx build",
     "format": "tsdx lint --fix",
     "lint": "tsdx lint",
-    "prepublishOnly": "tsdx build",
+    "prepare": "tsdx build",
     "semantic-release": "semantic-release",
     "start": "tsdx watch",
-    "test": "yarn build"
+    "test": "echo 'no test, see roadmap'"
   },
   "babel": {
     "presets": [
