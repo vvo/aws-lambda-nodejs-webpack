@@ -73,6 +73,7 @@ I want to be clear: I respect a LOT the work of the CDK team, and especially [@j
 This is a list of features I thought could be interesting to users. If you need on of them, please contribute to the project.
 
 - [ ] Allow passing rollup options, like externals
+- [ ] Allow using TypeScript, see https://github.com/rollup/plugins/tree/master/packages/typescript
 - [ ] Allow usage without the need of `entry`: `new NodejsFunction(this, "slack-notifications-lambda");` that would mimic https://docs.aws.amazon.com/cdk/api/latest/docs/aws-lambda-nodejs-readme.html#nodejs-function
 - [ ] Generate a bundle where entry is moved to /index.js
 - [ ] Use [jsii](https://github.com/aws/jsii) to build for other languages
