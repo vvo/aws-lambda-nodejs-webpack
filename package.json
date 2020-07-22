@@ -2,7 +2,7 @@
   "name": "aws-lambda-nodejs-rollup",
   "version": "0.0.0-development",
   "private": false,
-  "description": "CDK Constructs for AWS Lambda in Node.js using rollup.js",
+  "description": "CDK Construct to build Node.js AWS lambdas using rollup.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/vvo/aws-lambda-nodejs-rollup"
