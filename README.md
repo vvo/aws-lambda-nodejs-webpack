@@ -64,7 +64,7 @@ export function handler(event) {
 There's already a dedicated [aws-lambda-nodejs module for CDK](https://docs.aws.amazon.com/cdk/api/latest/docs/aws-lambda-nodejs-readme.html) but I had two major issues with it:
 
 1. **CDK uses docker** for anything lambda build related. This means it mounts your whole Node.js project (not just the lambda code) inside Docker before running a bundler like Parcel. This is perfectly fine and performant on Linux and Windows, but this is **extremely slow on macOS**: a single cdk synth would take 2 minutes for a 3 lines lambda. Since it might take a very long time for Docker on macOS to get as fast as on Linux. Even their latest update ([mutagen](https://docs.docker.com/docker-for-mac/mutagen/)), while significantly faster, still takes 20s just to mount a Node.js project.
-2. aws-lambda-nodejs generates single files bundles with every local and external module inlined. Which makes it very hard to debug and read on the AWS console. I wanted a lambda output that mimicks my project file organization.
+2. aws-lambda-nodejs generates a single file bundle with every local and external module inlined. Which makes it very hard to debug and read on the AWS console. I wanted a lambda output that mimicks my project file organization.
 
 I want to be clear: I respect a LOT the work of the CDK team, and especially [@jogold](https://github.com/jogold/), author of aws-lambda-nodejs) that helped me a lot into debugging performance issues and explaining to me how everything works.
 
