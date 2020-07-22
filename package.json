@@ -8,7 +8,7 @@
     "url": "https://github.com/vvo/aws-lambda-nodejs-rollup"
   },
   "license": "MIT",
-  "author": "Vincent Voyer",
+  "author": "Vincent Voyer <vincent@codeagain.com>",
   "main": "dist/index.js",
   "module": "dist/aws-lambda-nodejs-rollup.esm.js",
   "typings": "dist/index.d.ts",
@@ -46,11 +46,9 @@
     "@rollup/plugin-commonjs": "14.0.0",
     "@rollup/plugin-json": "4.1.0",
     "@rollup/plugin-node-resolve": "8.4.0",
-    "rollup": "2.22.1"
+    "rollup": "2.22.2"
   },
   "devDependencies": {
-    "@aws-cdk/aws-lambda": "^1.53.0",
-    "@aws-cdk/core": "^1.53.0",
     "eslint-plugin-import": "2.22.0",
     "eslint-plugin-jest": "23.18.0",
     "prettier-plugin-packagejson": "2.2.5",
@@ -60,7 +58,10 @@
     "tslib": "2.0.0",
     "typescript": "3.9.7"
   },
-  "peerDependencies": {},
+  "peerDependencies": {
+    "@aws-cdk/aws-lambda": "^1.54.0",
+    "@aws-cdk/core": "^1.54.0"
+  },
   "engines": {
     "node": ">=12"
   },

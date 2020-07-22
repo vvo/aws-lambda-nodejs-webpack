@@ -4,29 +4,21 @@ import * as os from "os";
 import * as lambda from "@aws-cdk/aws-lambda";
 import * as cdk from "@aws-cdk/core";
 import * as process from "process";
-import { ParcelBaseOptions } from "./bundling";
 import { spawnSync } from "child_process";
 
 /**
  * Properties for a NodejsFunction
  */
-export interface NodejsFunctionProps
-  extends lambda.FunctionOptions,
-    ParcelBaseOptions {
+export interface NodejsFunctionProps extends lambda.FunctionOptions {
   /**
-   * Path to the entry file (JavaScript or TypeScript).
-   *
-   * @default - Derived from the name of the defining file and the construct's id.
-   * If the `NodejsFunction` is defined in `stack.ts` with `my-handler` as id
-   * (`new NodejsFunction(this, 'my-handler')`), the construct will look at `stack.my-handler.ts`
-   * and `stack.my-handler.js`.
+   * Path to the entry file (JavaScript or TypeScript), relative to your project root
    */
   readonly entry: string;
 
   /**
    * The name of the exported handler in the entry file.
    *
-   * @default handler
+   * @default "handler"
    */
   readonly handler?: string;
 
@@ -66,8 +58,6 @@ export class NodejsFunction extends lambda.Function {
       throw new Error("Only `NODEJS` runtimes are supported.");
     }
 
-    console.log(props.entry);
-
     if (!/\.(js|ts)$/.test(props.entry)) {
       throw new Error(
         "Only JavaScript or TypeScript entry files are supported.",
@@ -91,17 +81,30 @@ export class NodejsFunction extends lambda.Function {
       path.join(os.tmpdir(), "aws-lambda-nodejs-rollup"),
     );
     const rollupConfigPath = path.join(outputDir, "rollup.config.js");
+    const rollupBin = path.join(
+      path.dirname(require.resolve("rollup")),
+      "bin/rollup",
+    );
+    const sampleRollupPluginPath = path.dirname(
+      require.resolve("@rollup/plugin-node-resolve"),
+    );
+    const pluginsPath = sampleRollupPluginPath.slice(
+      0,
+      sampleRollupPluginPath.lastIndexOf("/node_modules"),
+    );
+
     fs.writeFileSync(
       rollupConfigPath,
-      `import { nodeResolve } from "@rollup/plugin-node-resolve";
-    import commonjs from "@rollup/plugin-commonjs";
-    import json from "@rollup/plugin-json";
+      `
+    import { nodeResolve } from "${pluginsPath}/node_modules/@rollup/plugin-node-resolve";
+    import commonjs from "${pluginsPath}/node_modules/@rollup/plugin-commonjs";
+    import json from "${pluginsPath}/node_modules/@rollup/plugin-json";
     import { builtinModules } from "module";
 
     export default {
       input: "${entry}",
       output: {
-        dir: ${outputDir},
+        dir: "${outputDir}",
         format: "cjs",
         preserveModules: true,
         exports: "auto",
@@ -119,50 +122,32 @@ export class NodejsFunction extends lambda.Function {
     `,
     );
 
-    const rollup = spawnSync("./node_modules/.bin/rollup", [
-      "-c",
-      rollupConfigPath,
-    ]);
-    console.log(outputDir);
-    console.log(rollup);
+    const rollup = spawnSync(rollupBin, ["-c", rollupConfigPath]);
+
+    if (rollup.status !== 0) {
+      console.error("Rollup had an error bundling.");
+      console.error(rollup.output.map(out => out?.toString()));
+    }
+
+    const entryWithoutExtension = path.join(
+      path.dirname(props.entry),
+      path.basename(props.entry, path.extname(props.entry)),
+    );
 
     super(scope, id, {
       ...props,
       runtime,
       code: lambda.Code.fromAsset(outputDir),
-      // code: lambda.Code.fromAsset(projectRoot, {
-      //   assetHashType: cdk.AssetHashType.BUNDLE,
-      //   bundling: {
-      //     image,
-      //     command: ["bash", "-c", chain([parcelCommand, depsCommand])],
-      //     environment: options.parcelEnvironment,
-      //     volumes: options.cacheDir
-      //       ? [{ containerPath: "/parcel-cache", hostPath: options.cacheDir }]
-      //       : [],
-      //     workingDirectory: path
-      //       .dirname(containerEntryPath)
-      //       .replace(/\\/g, "/"), // Always use POSIX paths in the container
-      //   },
-      // }),
-      handler: `index.${handler}`,
+      handler: `${entryWithoutExtension}.${handler}`,
     });
 
     // Enable connection reuse for aws-sdk
     if (props.awsSdkConnectionReuse ?? true) {
       this.addEnvironment("AWS_NODEJS_CONNECTION_REUSE_ENABLED", "1");
+      this.addEnvironment("NODE_OPTIONS", "--enable-source-maps");
     }
   }
 }
-
-// function findEntry(entry: string): string {
-//   if (!/\.(jsx?|tsx?)$/.test(entry)) {
-//     throw new Error("Only JavaScript or TypeScript entry files are supported.");
-//   }
-//   if (!fs.existsSync(entry)) {
-//     throw new Error(`Cannot find entry file at ${entry}`);
-//   }
-//   return entry;
-// }
 
 function nodeMajorVersion(): number {
   return parseInt(process.versions.node.split(".")[0], 10);

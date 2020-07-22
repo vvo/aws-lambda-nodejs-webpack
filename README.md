@@ -1,99 +1,100 @@
-# javascript-library-template [![GitHub license](https://img.shields.io/github/license/vvo/javascript-library-template?style=flat)](https://github.com/vvo/javascript-library-template/blob/master/LICENSE) [![Tests](https://github.com/vvo/javascript-library-template/workflows/CI/badge.svg)](https://github.com/vvo/javascript-library-template/actions) [![codecov](https://codecov.io/gh/vvo/javascript-library-template/branch/master/graph/badge.svg)](https://codecov.io/gh/vvo/javascript-library-template) ![npm](https://img.shields.io/npm/v/javascript-library-template) [![minizipped size](https://badgen.net/bundlephobia/minzip/javascript-library-template)](https://bundlephobia.com/result?p=javascript-library-template)
-
-<p align="center">
-<small><b>Click below to create a new GitHub repository using this template:</b></small>
-<br/><br/><a href="https://github.com/vvo/javascript-library-template/generate">
-<img src="https://img.shields.io/badge/use%20this-template-blue?logo=github">
-</a>
-</p>
+# aws-lambda-nodejs-rollup [![GitHub license](https://img.shields.io/github/license/vvo/aws-lambda-nodejs-rollup?style=flat)](https://github.com/vvo/aws-lambda-nodejs-rollup/blob/master/LICENSE) [![Tests](https://github.com/vvo/aws-lambda-nodejs-rollup/workflows/CI/badge.svg)](https://github.com/vvo/aws-lambda-nodejs-rollup/actions) [![codecov](https://codecov.io/gh/vvo/aws-lambda-nodejs-rollup/branch/master/graph/badge.svg)](https://codecov.io/gh/vvo/aws-lambda-nodejs-rollup) ![npm](https://img.shields.io/npm/v/aws-lambda-nodejs-rollup) [![minizipped size](https://badgen.net/bundlephobia/minzip/aws-lambda-nodejs-rollup)](https://bundlephobia.com/result?p=aws-lambda-nodejs-rollup)
 
 ---
 
-**This JavaScript library template** allows you to easily develop, collaborate on and publish a JavaScript library with all the modern tooling you'd expect from the current JavaScript ecosystem.
+_[CDK](https://aws.amazon.com/cdk/) Construct to build Node.js AWS lambdas using [rollup.js](https://rollupjs.org/)_
 
-**Why should you use this?** One of the hidden challenges of authoring opensource JavaScript libraries is to provide a project that is easy to contribute to. You want people to join your project. Doing so requires a good amount of boilerplate: testing, code coverage, dependencies maintenance, release scripts, tooling requirements (Node.js, Yarn and which versions are we using again?), code editor configuration, formatting, linting... Well, this is the goal of this template: **to provide sensible and modern defaults to all those subjects**. So that once set up, you can focus on ⌨️ coding, 🙌 collaborating and 🚀 shipping.
+_Table of contents:_
 
-**The goals of the template are to:**
+- [Usage example](#usage-example)
+- [Features](#features)
+- [Why?](#why)
+- [Roadmap](#roadmap)
+- [How to make changes and test locally](#how-to-make-changes-and-test-locally)
+- [Thanks](#thanks)
 
-- Ease the contribution of the library by providing reproducible environments for developers and CI
-- Automate as much as possible, from testing to releasing and upgrading dependencies
-- Provide good defaults for users of [Visual Studio Code](https://code.visualstudio.com/)
-
-**Features:**
-
-- [EditorConfig](https://editorconfig.org/): easy contributions from any code editor.
-- [ESLint](https://eslint.org/): launched in the `test` script.
-- [Prettier](https://prettier.io/): launched in the `test` script, with markdown, JavaScript, CSS and JSON files support (including automatic [`package.json` formatting](https://github.com/matzkoh/prettier-plugin-packagejson)).
-- Automatic VSCode formatting and linting: using VSCode extensions recommendations and workspace settings in .`vscode/` folder.
-- [Yarn](http://yarnpkg.com/) version pinning: via [Yarn policies](https://classic.yarnpkg.com/en/docs/cli/policies/), so anyone contributing or any system accessing your library will use the same Yarn version without having to think about it.
-- [Node.js](https://nodejs.org/) version pinning: via [nvm](https://github.com/nvm-sh/nvm), so anyone contributing or any system accessing your library will use the same Node.js version without having to think about it.
-- [Jest](https://jestjs.io/): launched in the `test` script, also with the right VSCode settings providing a testing workflow inside VSCode using [`vscode-jest`](https://github.com/jest-community/vscode-jest) extension.
-- [GitHub actions](https://github.com/features/actions): automatic testing and releasing from GitHub: npm publish and GitHub releases are automatically created. Note that the package.json in your repository is never updated (the version is always `0.0.0-development`), only the one in npm is updated. This is surprising at first but as long as you display the published version in your README (like this template does) then you're fine. Find more information about this in the [semantic-release documentation](https://semantic-release.gitbook.io/semantic-release/support/faq#why-is-the-package-jsons-version-not-updated-in-my-repository).
-- [semantic-release](https://semantic-release.gitbook.io/semantic-release/): allows for automatic releases based on semver.org and [conventional commits specification](https://www.conventionalcommits.org/). The defaults are taken from the [Angular git commit guidelines](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines).
-- [Codecov](https://codecov.io/): launched in the `test` script on CI, ensures code coverage does not decrease on pull requests _(free for public and private repositories)_.
-- [Renovate](https://renovate.whitesourcesoftware.com/) configurated with the [JavaScript library preset](https://docs.renovatebot.com/presets-config/#configjs-lib): this will automatically update your dependencies by opening pull request for you to approve or not. So you never have to think about it _(free for public and private repositories)_.
-
-## Setup
-
-Using this template requires a bit of setup, but way less than if you had to start from 0. Here's what you need to do:
-
-**Required steps:** (needed every time you want to use the template)
-
-1. [Create a new repository](https://github.com/new) on GitHub based on this template
-1. [Setup renovate](https://github.com/apps/renovate) for your new repository. If you previously installed the Renovate application to your account then this is just a box to tick when creating the repository
-1. [Clone the new repository](https://help.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository)
-1. Change the package name and description in `package.json`
-1. [Setup Codecov](https://github.com/apps/codecov) for your new repository. If you previously installed the Codecov application to your account then this is just a box to tick when creating the repository
-1. Setup semantic releases: run `yarn semantic-release-cli setup` in a terminal (This will ask for your npm and GitHub credentials)
-1. Add the previously generated `GH_TOKEN` and `NPM_TOKEN` secrets to the [GitHub secrets](https://help.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#creating-encrypted-secrets) of the new repository
-1. Install dependencies: run `yarn` in your terminal
-1. **Develop your library**: change code in `lib/`
-1. **Test your library**: you can either see tests results inside VSCode directly or run `yarn jest --watch`
-1. **Check formatting of your code**: run `yarn check-formatting` in your terminal
-1. **Create your first release**: [open a pull request](https://help.github.com/en/desktop/contributing-to-projects/creating-a-pull-request) on your project, wait for tests to pass, merge and 💥 your library will be automatically released to npm and a GitHub release will be created
-
-**Optional steps:** (needed only if you're doing them for the first time)
-
-1. If you're not using VSCode, if your editor has no EditorConfig support, then [setup EditorConfig](https://editorconfig.org/#download) [EditorConfig support](https://editorconfig.org/)
-1. Make sure you have [npm 2fa auth-only](https://docs.npmjs.com/about-two-factor-authentication#authorization-only) configured. Releases can't be automated if you have 2fa setup for both authentication and publish. See https://semantic-release.gitbook.io/semantic-release/usage/ci-configuration#authentication-for-plugins
-1. [Install nvm](https://github.com/nvm-sh/nvm)
-1. [Install yarn](https://classic.yarnpkg.com/en/docs/install#alternatives-stable)
-
-## Status and next steps
-
-The template is still pretty new (March 2020) and was done to author JavaScript libraries using ECMAScript modules for Node.js >= 12. Gradually, or given requests, **we could update it to support**:
-
-- Using different CI environments than GitHub actions
-- Authoring browser libraries
-- Generating `README.md` table of contents automatically
-- Better default `README.md` content (Install, API, Examples, ...)
-- `create-javascript-library` command line that would get most of the setup done easily
-- `.github` Pull requests template, issues templates, CONTRIBUTING files
-- add or change scripts to allow for auto-formatting
-- provide documentation on how to protect branches on GitHub
-- provide scripts to easily open a pull request once a branch is created
-- provide a way to check for semantic commits in PR
-- contributors list
-- https://github.com/apps/semantic-pull-requests
-
-If you'd like to participate, if you have bugs or new ideas, [open an issue](https://github.com/vvo/javascript-library-template/issues/new) or a pull request.
-
-## Recipes
-
-### Using `yarn link`
-
-To use `yarn link` efficiently, do this:
+## Usage example
 
 ```bash
-> cd my-library
-> yarn link
-> yarn build --watch
-> cd ../my-other-library
-> yarn link my-library
+yarn add aws-lambda-nodejs-rollup
 ```
 
-### Reformating all code
+```js
+// infra/super-app-stack.js
+const sns = require("@aws-cdk/aws-sns");
+const subscriptions = require("@aws-cdk/aws-sns-subscriptions");
+const core = require("@aws-cdk/core");
+const { NodejsFunction } = require("aws-lambda-nodejs-rollup");
 
-```bash
-yarn format
+module.exports = class SuperAppProductionStack extends core.Stack {
+  constructor(scope, id, props) {
+    super(scope, id, props);
+
+    const slackNotificationsLambda = new NodejsFunction(
+      this,
+      "slack-notifications-lambda",
+      {
+        entry: "events/slack-notifications.js", // required
+      },
+    );
+  }
+};
 ```
+
+```js
+// events/slack-notifications.js
+import { WebClient as SlackWebClient } from "@slack/web-api";
+
+export function handler(event) {
+  const message = event.Records[0].Sns.Message;
+  // do something with message
+}
+```
+
+## Features
+
+- fast, [no-docker](https://github.com/aws/aws-cdk/issues/9120) CDK construct
+- lambda output respects original files structure and node_modules (no inlining)
+- lambda output only contains the necessary files, no README, tests, ...
+- bundling happens in temporary directories, it never writes in your project directory
+- source map support
+
+## Why?
+
+There's already a dedicated [aws-lambda-nodejs module for CDK](https://docs.aws.amazon.com/cdk/api/latest/docs/aws-lambda-nodejs-readme.html) but I had two major issues with it:
+
+1. **CDK uses docker** for anything lambda build related. This means it mounts your whole Node.js project (not just the lambda code) inside Docker before running a bundler like Parcel. This is perfectly fine and performant on Linux and Windows, but this is **extremely slow on macOS**: a single cdk synth would take 2 minutes for a 3 lines lambda. Since it might take a very long time for Docker on macOS to get as fast as on Linux. Even their latest update ([mutagen](https://docs.docker.com/docker-for-mac/mutagen/)), while significantly faster, still takes 20s just to mount a Node.js project.
+2. aws-lambda-nodejs generates single files bundles with every local and external module inlined. Which makes it very hard to debug and read on the AWS console. I wanted a lambda output that mimicks my project file organization.
+
+I want to be clear: I respect a LOT the work of the CDK team, and especially [@jogold](https://github.com/jogold/), author of aws-lambda-nodejs) that helped me a lot into debugging performance issues and explaining to me how everything works.
+
+## Roadmap
+
+This is a list of features I thought could be interesting to users. If you need on of them, please contribute to the project.
+
+- [ ] Allow passing rollup options, like externals
+- [ ] Allow usage without the need of `entry`: `new NodejsFunction(this, "slack-notifications-lambda");` that would mimic https://docs.aws.amazon.com/cdk/api/latest/docs/aws-lambda-nodejs-readme.html#nodejs-function
+- [ ] Generate a bundle where entry is moved to /index.js
+- [ ] Use [jsii](https://github.com/aws/jsii) to build for other languages
+- [ ] Ask CDK team if this could live under their repositories
+- [ ] Allow native modules, with option `nativeModules`. They would have to be installed into a temp folder with `npm_config_arch` and `npm_config_platform` and aliased in rollup configuration
+- [ ] Add tests
+
+## How to make changes and test locally
+
+```
+// fork and clone
+cd aws-lambda-nodejs-rollup
+yarn
+yarn link
+yarn start
+
+# in another terminal and project where you want to test changes
+yarn link aws-lambda-nodejs-rollup
+# cdk commands will now use your local aws-lambda-nodejs-rollup
+```
+
+## Thanks
+
+- the CDK team for this awesome project
+- [@jogold](https://github.com/jogold/) for his time while helping me debugging performance issues on Docker

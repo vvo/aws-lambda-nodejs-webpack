@@ -1,8 +1,0 @@
-
-Todo:
-  ☐ first version without renaming files, LETS GO
-  ☐ move entry file to /index.js, this could be done via regex to select all requires then rewrite require using https://nodejs.org/dist/latest-v12.x/docs/api/path.html#path_path_relative_from_to
-  ☐ use jsii to build for other languages
-  ☐ allow native modules, by installing into a different folder with npm_config_arch and npm_config_platform and aliasing in rollup configuration
-  ☐ allow rollup options, like externals if user is using aws layers
-  ☐ double check handler index output file
