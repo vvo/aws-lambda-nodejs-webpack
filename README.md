@@ -83,6 +83,7 @@ This is a list of features I thought could be interesting to users. If you need 
 - [ ] Allow native modules, with option `nativeModules`. They would have to be installed into a temp folder with `npm_config_arch` and `npm_config_platform` and aliased in rollup configuration
 - [ ] Add tests
 - [ ] Monorepo support
+- [ ] If necessary/beneficial, implement Rollup cache, see https://github.com/drg-adaptive/serverless-rollup-plugin and https://github.com/rollup/rollup/issues/2182
 - [ ] Other ideas?
 
 ## How to make changes and test locally
