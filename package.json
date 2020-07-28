@@ -2,10 +2,10 @@
   "name": "aws-lambda-nodejs-webpack",
   "version": "0.0.0-development",
   "private": false,
-  "description": "CDK Construct to build Node.js AWS lambdas using webbpack",
+  "description": "CDK Construct to build Node.js AWS lambdas using webpack",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vvo/aws-lambda-nodejs-webbpack"
+    "url": "https://github.com/vvo/aws-lambda-nodejs-webpack"
   },
   "license": "MIT",
   "author": "Vincent Voyer <vincent@codeagain.com>",
@@ -59,7 +59,7 @@
     "eslint-plugin-import": "2.22.0",
     "eslint-plugin-jest": "23.18.0",
     "prettier-plugin-packagejson": "2.2.5",
-    "semantic-release": "17.1.1",
+    "semantic-release": "^17.1.1",
     "semantic-release-cli": "5.3.1",
     "tsdx": "0.13.2",
     "tslib": "2.0.0",
