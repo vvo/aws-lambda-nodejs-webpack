@@ -11,6 +11,7 @@ _Table of contents:_
 - [Why?](#why)
 - [Roadmap](#roadmap)
 - [How to make changes and test locally](#how-to-make-changes-and-test-locally)
+- [WTF happened to the rollup version?](#wtf-happened-to-the-rollup-version)
 - [Thanks](#thanks)
 
 ## Usage example
@@ -54,10 +55,11 @@ export function handler(event) {
 ## Features
 
 - fast, [no-docker](https://github.com/aws/aws-cdk/issues/9120) CDK construct
-- lambda output respects original files structure and node_modules (no inlining)
 - lambda output only contains the necessary files, no README, tests, ...
 - bundling happens in temporary directories, it never writes in your project directory
 - source map support
+- TypeScript support (⚠️ Beta, do provide feedback in issues!)
+- Babel support (preset-env)
 
 ## Why?
 
@@ -106,6 +108,10 @@ yarn start
 yarn link aws-lambda-nodejs-webpack
 # cdk commands will now use your local aws-lambda-nodejs-webpack
 ```
+
+## WTF happened to the rollup version?
+
+In case you starred this project early on, it was previously using [rollup.js](https://rollupjs.org/) to build lambdas. After hitting roadblocks along the way, for example rollup cannot handle well circular dependencies well, I decided to stop trying to use rollup. Rollup is great to build libraries, but not so great to build web applications. And lambdas are closer to web applications bundling than libraries.
 
 ## Thanks
 
