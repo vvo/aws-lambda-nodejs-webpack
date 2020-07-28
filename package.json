@@ -47,8 +47,10 @@
     "@babel/plugin-transform-runtime": "7.10.5",
     "@babel/preset-env": "7.10.4",
     "babel-loader": "8.1.0",
+    "babel-plugin-source-map-support": "2.1.2",
     "noop2": "2.0.0",
-    "ts-loader": "^8.0.1",
+    "source-map-support": "0.5.19",
+    "ts-loader": "8.0.1",
     "webpack": "4.44.0",
     "webpack-cli": "3.3.12"
   },
