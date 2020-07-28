@@ -20,8 +20,8 @@
   ],
   "scripts": {
     "build": "tsdx build",
-    "format": "tsdx lint --fix",
-    "lint": "tsdx lint",
+    "format": "tsdx lint src --fix",
+    "lint": "tsdx lint src",
     "prepare": "tsdx build",
     "semantic-release": "semantic-release",
     "start": "tsdx watch",
@@ -80,6 +80,10 @@
       "node": true
     },
     "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "ecmaVersion": 2019,
+      "sourceType": "module"
+    },
     "extends": [
       "eslint:recommended",
       "plugin:jest/recommended",
