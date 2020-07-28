@@ -1,10 +1,11 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
-import * as lambda from "@aws-cdk/aws-lambda";
-import * as cdk from "@aws-cdk/core";
 import * as process from "process";
 import { spawnSync } from "child_process";
+
+import * as lambda from "@aws-cdk/aws-lambda";
+import * as cdk from "@aws-cdk/core";
 
 /**
  * Properties for a NodejsFunction
@@ -30,6 +31,17 @@ export interface NodejsFunctionProps extends lambda.FunctionOptions {
    * `NODEJS_10_X` otherwise.
    */
   readonly runtime?: lambda.Runtime;
+
+  /**
+   * If you get "Module not found: Error: Can't resolve 'module_name'" errors, and you're not
+   * actually using those modules, then it means there's a module you're using that is trying to
+   * dynamically require other modules. This is the case with Knex.js. When this happens, pass all the modules
+   * names found in the build error in this array.
+   *
+   * Example if you're only using PostgreSQL with Knex.js, use:
+   *  `modulesToIgnore: ["mssql", "pg-native", "pg-query-stream", "tedious"]`
+   */
+  readonly modulesToIgnore?: string[];
 
   /**
    * Whether to automatically reuse TCP connections when working with the AWS
@@ -64,10 +76,10 @@ export class NodejsFunction extends lambda.Function {
       );
     }
 
-    const entry = path.resolve(props.entry);
+    const entryFullPath = path.resolve(props.entry);
 
-    if (!fs.existsSync(entry)) {
-      throw new Error(`Cannot find entry file at ${entry}`);
+    if (!fs.existsSync(entryFullPath)) {
+      throw new Error(`Cannot find entry file at ${entryFullPath}`);
     }
 
     const handler = props.handler ?? "handler";
@@ -78,68 +90,110 @@ export class NodejsFunction extends lambda.Function {
     const runtime = props.runtime ?? defaultRunTime;
 
     const outputDir = fs.mkdtempSync(
-      path.join(os.tmpdir(), "aws-lambda-nodejs-rollup"),
+      path.join(os.tmpdir(), "aws-lambda-nodejs-webpack"),
     );
-    const rollupConfigPath = path.join(outputDir, "rollup.config.js");
-    const rollupBin = path.join(
-      path.dirname(require.resolve("rollup")),
-      "bin/rollup",
-    );
-    const sampleRollupPluginPath = path.dirname(
-      require.resolve("@rollup/plugin-node-resolve"),
-    );
-    const pluginsPath = sampleRollupPluginPath.slice(
-      0,
-      sampleRollupPluginPath.lastIndexOf("/node_modules"),
+    const webpackBinPath = require.resolve("webpack-cli");
+    const webpackConfigPath = path.join(outputDir, "webpack.config.js");
+    const pluginsPath = path.join(
+      webpackBinPath.slice(0, webpackBinPath.lastIndexOf("/node_modules")),
+      "node_modules",
     );
 
-    fs.writeFileSync(
-      rollupConfigPath,
-      `
-    import { nodeResolve } from "${pluginsPath}/node_modules/@rollup/plugin-node-resolve";
-    import commonjs from "${pluginsPath}/node_modules/@rollup/plugin-commonjs";
-    import json from "${pluginsPath}/node_modules/@rollup/plugin-json";
-    import { builtinModules } from "module";
+    const webpackConfiguration = `
+    const { builtinModules } = require("module");
+    const { NormalModuleReplacementPlugin } = require("${path.join(
+      pluginsPath,
+      "webpack",
+    )}");
 
-    export default {
-      input: "${entry}",
-      output: {
-        dir: "${outputDir}",
-        format: "cjs",
-        preserveModules: true,
-        exports: "auto",
-        sourcemap: "inline",
+    module.exports = {
+      mode: "none",
+      entry: "${entryFullPath}",
+      target: "node",
+      resolve: {
+        modules: ["node_modules", "."]
       },
+      devtool: "source-map",
+      module: {
+        rules: [
+          {
+            test: /\\.js$/,
+            exclude: /node_modules/,
+            use: {
+              loader: "${path.join(pluginsPath, "babel-loader")}",
+              options: {
+                cacheDirectory: true,
+                presets: [
+                  [
+                    "${path.join(pluginsPath, "@babel/preset-env")}",
+                    {
+                      "targets": {
+                        "node": "${
+                          runtime.name.split("nodejs")[1].split(".")[0]
+                        }"
+                      },
+                      loose: true,
+                      bugfixes: true,
+                    },
+                  ]
+                ],
+                plugins: ["${path.join(
+                  pluginsPath,
+                  "@babel/plugin-transform-runtime",
+                )}"]
+              }
+            }
+          },
+          {
+            test: /\\.ts$/,
+            use: 'ts-loader',
+            exclude: /node_modules/,
+          },
+        ]
+      },
+      externals: [...builtinModules, "aws-sdk"],
+      output: {
+        filename: "[name].js",
+        path: "${outputDir}",
+        libraryTarget: "commonjs2",
+      },
+      ${(props.modulesToIgnore &&
+        `
       plugins: [
-        nodeResolve({
-          preferBuiltins: true,
+        new NormalModuleReplacementPlugin(
+          /${props.modulesToIgnore.join("|")}/,
+          "${path.join(pluginsPath, "noop2")}",
+        ),
+      ]
+      `) ||
+        ""}
+    };`;
+
+    fs.writeFileSync(webpackConfigPath, webpackConfiguration);
+
+    // to implement cache, create a script that uses webpack API, store cache in a file with JSON.stringify, based on entry path key then reuse it
+    const webpack = spawnSync(webpackBinPath, ["--config", webpackConfigPath], {
+      cwd: process.cwd(),
+    });
+
+    if (webpack.status !== 0) {
+      console.error("webpack had an error when bundling.");
+      console.error(
+        webpack?.output?.map(out => {
+          return out?.toString();
         }),
-        commonjs(),
-        json(),
-      ],
-      external: ["aws-sdk", ...builtinModules],
-    };
-    `,
-    );
-
-    const rollup = spawnSync(rollupBin, ["-c", rollupConfigPath]);
-
-    if (rollup.status !== 0) {
-      console.error("Rollup had an error bundling.");
-      console.error(rollup.output.map(out => out?.toString()));
+      );
+      console.error("webpack configuration was:", webpackConfiguration);
       process.exit(1);
     }
 
-    const entryWithoutExtension = path.join(
-      path.dirname(props.entry),
-      path.basename(props.entry, path.extname(props.entry)),
-    );
+    fs.unlinkSync(webpackConfigPath);
 
     super(scope, id, {
       ...props,
       runtime,
       code: lambda.Code.fromAsset(outputDir),
-      handler: `${entryWithoutExtension}.${handler}`,
+      handler: `main.${handler}`,
     });
 
     // Enable connection reuse for aws-sdk

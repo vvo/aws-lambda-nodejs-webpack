@@ -1,16 +1,16 @@
 {
-  "name": "aws-lambda-nodejs-rollup",
+  "name": "aws-lambda-nodejs-webpack",
   "version": "0.0.0-development",
   "private": false,
-  "description": "CDK Construct to build Node.js AWS lambdas using rollup.js",
+  "description": "CDK Construct to build Node.js AWS lambdas using webbpack",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vvo/aws-lambda-nodejs-rollup"
+    "url": "https://github.com/vvo/aws-lambda-nodejs-webbpack"
   },
   "license": "MIT",
   "author": "Vincent Voyer <vincent@codeagain.com>",
   "main": "dist/index.js",
-  "module": "dist/aws-lambda-nodejs-rollup.esm.js",
+  "module": "dist/aws-lambda-nodejs-webpack.esm.js",
   "typings": "dist/index.d.ts",
   "files": [
     "src/",
@@ -43,14 +43,19 @@
     "trailingComma": "all"
   },
   "dependencies": {
-    "@rollup/plugin-commonjs": "14.0.0",
-    "@rollup/plugin-json": "4.1.0",
-    "@rollup/plugin-node-resolve": "8.4.0",
-    "rollup": "2.22.2"
+    "@babel/core": "7.10.5",
+    "@babel/plugin-transform-runtime": "7.10.5",
+    "@babel/preset-env": "7.10.4",
+    "babel-loader": "8.1.0",
+    "noop2": "2.0.0",
+    "ts-loader": "^8.0.1",
+    "webpack": "4.44.0",
+    "webpack-cli": "3.3.12"
   },
   "devDependencies": {
     "@aws-cdk/aws-lambda": "1.54.0",
     "@aws-cdk/core": "1.54.0",
+    "@typescript-eslint/parser": "^3.7.1",
     "eslint-plugin-import": "2.22.0",
     "eslint-plugin-jest": "23.18.0",
     "prettier-plugin-packagejson": "2.2.5",
@@ -73,12 +78,11 @@
       "jest": true,
       "node": true
     },
-    "parser": "babel-eslint",
+    "parser": "@typescript-eslint/parser",
     "parserOptions": {
       "ecmaVersion": 2019,
       "sourceType": "module"
     },
-    "sideEffects": false,
     "extends": [
       "eslint:recommended",
       "plugin:jest/recommended",

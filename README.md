@@ -1,8 +1,8 @@
-# aws-lambda-nodejs-rollup [![GitHub license](https://img.shields.io/github/license/vvo/aws-lambda-nodejs-rollup?style=flat)](https://github.com/vvo/aws-lambda-nodejs-rollup/blob/master/LICENSE) [![Tests](https://github.com/vvo/aws-lambda-nodejs-rollup/workflows/CI/badge.svg)](https://github.com/vvo/aws-lambda-nodejs-rollup/actions) [![codecov](https://codecov.io/gh/vvo/aws-lambda-nodejs-rollup/branch/master/graph/badge.svg)](https://codecov.io/gh/vvo/aws-lambda-nodejs-rollup) ![npm](https://img.shields.io/npm/v/aws-lambda-nodejs-rollup)
+# aws-lambda-nodejs-webpack [![GitHub license](https://img.shields.io/github/license/vvo/aws-lambda-nodejs-webpack?style=flat)](https://github.com/vvo/aws-lambda-nodejs-webpack/blob/master/LICENSE) [![Tests](https://github.com/vvo/aws-lambda-nodejs-webpack/workflows/CI/badge.svg)](https://github.com/vvo/aws-lambda-nodejs-webpack/actions) [![codecov](https://codecov.io/gh/vvo/aws-lambda-nodejs-webpack/branch/master/graph/badge.svg)](https://codecov.io/gh/vvo/aws-lambda-nodejs-webpack) ![npm](https://img.shields.io/npm/v/aws-lambda-nodejs-webpack)
 
 ---
 
-_[CDK](https://aws.amazon.com/cdk/) Construct to build Node.js AWS lambdas using [rollup.js](https://rollupjs.org/)_
+_[CDK](https://aws.amazon.com/cdk/) Construct to build Node.js AWS lambdas using [webpack](https://webpack.js.org/)_
 
 _Table of contents:_
 
@@ -16,7 +16,7 @@ _Table of contents:_
 ## Usage example
 
 ```bash
-yarn add aws-lambda-nodejs-rollup
+yarn add aws-lambda-nodejs-webpack
 ```
 
 ```js
@@ -24,7 +24,7 @@ yarn add aws-lambda-nodejs-rollup
 const sns = require("@aws-cdk/aws-sns");
 const subscriptions = require("@aws-cdk/aws-sns-subscriptions");
 const core = require("@aws-cdk/core");
-const { NodejsFunction } = require("aws-lambda-nodejs-rollup");
+const { NodejsFunction } = require("aws-lambda-nodejs-webpack");
 
 module.exports = class SuperAppProductionStack extends core.Stack {
   constructor(scope, id, props) {
@@ -72,32 +72,39 @@ I want to be clear: I respect a LOT the work of the CDK team, and especially [@j
 
 This is a list of features I thought could be interesting to users. If you need on of them, please contribute to the project.
 
-- [ ] Allow passing rollup options, like externals
-- [ ] Allow using TypeScript, see https://github.com/rollup/plugins/tree/master/packages/typescript
-- [ ] Allow using babel, if you need preset-env
-- [ ] Allow passing babel options
-- [ ] Allow usage without the need of `entry`: `new NodejsFunction(this, "slack-notifications-lambda");` that would mimic https://docs.aws.amazon.com/cdk/api/latest/docs/aws-lambda-nodejs-readme.html#nodejs-function
-- [ ] Generate a bundle where entry is moved to /index.js
-- [ ] Use [jsii](https://github.com/aws/jsii) to build for other languages
-- [ ] Ask CDK team if this could live under their repositories
-- [ ] Allow native modules, with option `nativeModules`. They would have to be installed into a temp folder with `npm_config_arch` and `npm_config_platform` and aliased in rollup configuration
+- [ ] Test/Get feedback on TypeScript support
+- [ ] Get feedback on monorepo support
+- [ ] Allow passing webpack/babel options/a function that can update the full webpack configuration
+- [ ] Allow native modules/passing externals, with option `nativeModules` or `externals`. They would have to be installed into a temp folder with `npm_config_arch` and `npm_config_platform` and aliased in webpack configuration/or considered as externals. Externals and nativeModules seems related options but may be completely different
+- [ ] Use [jsii](https://github.com/aws/jsii) to build the construct for other languages
 - [ ] Add tests
-- [ ] Monorepo support
-- [ ] If necessary/beneficial, implement Rollup cache, see https://github.com/drg-adaptive/serverless-rollup-plugin and https://github.com/rollup/rollup/issues/2182
-- [ ] Other ideas?
+- [ ] (if current way buggy): force people to provide aliases instead of considering cwd as base node_module
+- [ ] Allow usage without the need of `entry`: `new NodejsFunction(this, "slack-notifications-lambda");` that would mimic https://docs.aws.amazon.com/cdk/api/latest/docs/aws-lambda-nodejs-readme.html#nodejs-function
+- [ ]
+- [x] Generate a bundle where entry is moved to /main.js
+- [x] Allow using TypeScript
+- [x] use webpack and babel cache
+- [x] remove webpackconfig from bundle
+- [x] pass runtime to babel target
+- [x] cdk synth generates different builds even when the lambda code does not changes, issue?
+- [x] Allow using babel, if you need preset-env
+- [x] add babel preset env by default
+- [ ] ~add bundling timing information to output console~ note: this would pollute cdk synth
+- [ ] ~Ask CDK team if this could live under their repositories~ Better be just community based
+- [ ] Other ideas? Open an issue
 
 ## How to make changes and test locally
 
 ```
 // fork and clone
-cd aws-lambda-nodejs-rollup
+cd aws-lambda-nodejs-webpack
 yarn
 yarn link
 yarn start
 
 # in another terminal and project where you want to test changes
-yarn link aws-lambda-nodejs-rollup
-# cdk commands will now use your local aws-lambda-nodejs-rollup
+yarn link aws-lambda-nodejs-webpack
+# cdk commands will now use your local aws-lambda-nodejs-webpack
 ```
 
 ## Thanks
