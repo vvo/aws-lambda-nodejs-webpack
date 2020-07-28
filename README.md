@@ -1,4 +1,4 @@
-# aws-lambda-nodejs-webpack [![GitHub license](https://img.shields.io/github/license/vvo/aws-lambda-nodejs-webpack?style=flat)](https://github.com/vvo/aws-lambda-nodejs-webpack/blob/master/LICENSE) [![Tests](https://github.com/vvo/aws-lambda-nodejs-webpack/workflows/CI/badge.svg)](https://github.com/vvo/aws-lambda-nodejs-webpack/actions) [![codecov](https://codecov.io/gh/vvo/aws-lambda-nodejs-webpack/branch/master/graph/badge.svg)](https://codecov.io/gh/vvo/aws-lambda-nodejs-webpack) ![npm](https://img.shields.io/npm/v/aws-lambda-nodejs-webpack)
+# aws-lambda-nodejs-webpack ![npm](https://img.shields.io/npm/v/aws-lambda-nodejs-webpack) [![Mentioned in Awesome CDK](https://awesome.re/mentioned-badge.svg)](https://github.com/eladb/awesome-cdk) [![GitHub license](https://img.shields.io/github/license/vvo/aws-lambda-nodejs-webpack?style=flat)](https://github.com/vvo/aws-lambda-nodejs-webpack/blob/master/LICENSE) [![Tests](https://github.com/vvo/aws-lambda-nodejs-webpack/workflows/CI/badge.svg)](https://github.com/vvo/aws-lambda-nodejs-webpack/actions)
 
 ---
 
