@@ -3,6 +3,7 @@ import * as path from "path";
 import * as os from "os";
 import * as process from "process";
 import { spawnSync } from "child_process";
+import findUp from "find-up";
 
 import * as lambda from "@aws-cdk/aws-lambda";
 import * as cdk from "@aws-cdk/core";
@@ -92,19 +93,41 @@ export class NodejsFunction extends lambda.Function {
     const outputDir = fs.mkdtempSync(
       path.join(os.tmpdir(), "aws-lambda-nodejs-webpack"),
     );
-    const webpackBinPath = require.resolve("webpack-cli");
     const webpackConfigPath = path.join(outputDir, "webpack.config.js");
+
+    // The code below is mostly to handle cases where this module is used through
+    // yarn link. I think otherwise just using require.resolve and passing just the babel plugin
+    // names would have worked.
+
+    const webpackBinPath = require.resolve("webpack-cli");
+
+    const plugins = [
+      "webpack",
+      "babel-loader",
+      "@babel/preset-env",
+      "@babel/plugin-transform-runtime",
+      "babel-plugin-source-map-support",
+      "noop2",
+    ];
     const pluginsPath = path.join(
       webpackBinPath.slice(0, webpackBinPath.lastIndexOf("/node_modules")),
       "node_modules",
     );
+    const pluginsPaths: any = plugins.reduce(function(acc, pluginName) {
+      return {
+        [pluginName]: findUp.sync(pluginName, {
+          type: "directory",
+          cwd: pluginsPath,
+        }),
+        ...acc,
+      };
+    }, {});
 
     const webpackConfiguration = `
     const { builtinModules } = require("module");
-    const { NormalModuleReplacementPlugin } = require("${path.join(
-      pluginsPath,
-      "webpack",
-    )}");
+    const { NormalModuleReplacementPlugin } = require("${
+      pluginsPaths["webpack"]
+    }");
 
     module.exports = {
       mode: "none",
@@ -120,12 +143,12 @@ export class NodejsFunction extends lambda.Function {
             test: /\\.js$/,
             exclude: /node_modules/,
             use: {
-              loader: "${path.join(pluginsPath, "babel-loader")}",
+              loader: "${pluginsPaths["babel-loader"]}",
               options: {
                 cacheDirectory: true,
                 presets: [
                   [
-                    "${path.join(pluginsPath, "@babel/preset-env")}",
+                    "${pluginsPaths["@babel/preset-env"]}",
                     {
                       "targets": {
                         "node": "${
@@ -138,10 +161,7 @@ export class NodejsFunction extends lambda.Function {
                   ]
                 ],
                 plugins: [
-                  "${path.join(
-                    pluginsPath,
-                    "@babel/plugin-transform-runtime",
-                  )}",
+                  "${pluginsPaths["@babel/plugin-transform-runtime"]}",
                   "${path.join(pluginsPath, "babel-plugin-source-map-support")}"
                 ]
               }
@@ -165,7 +185,7 @@ export class NodejsFunction extends lambda.Function {
       plugins: [
         new NormalModuleReplacementPlugin(
           /${props.modulesToIgnore.join("|")}/,
-          "${path.join(pluginsPath, "noop2")}",
+          "${pluginsPaths["noop2"]}",
         ),
       ]
       `) ||
