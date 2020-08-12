@@ -162,7 +162,7 @@ export class NodejsFunction extends lambda.Function {
                 ],
                 plugins: [
                   "${pluginsPaths["@babel/plugin-transform-runtime"]}",
-                  "${path.join(pluginsPath, "babel-plugin-source-map-support")}"
+                  "${pluginsPaths["babel-plugin-source-map-support"]}"
                 ]
               }
             }
