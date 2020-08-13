@@ -112,7 +112,7 @@ export class NodejsFunction extends lambda.Function {
       target: "node",
       resolve: {
         modules: ["node_modules", "."],
-        extensions: [ '.tsx', '.ts', '.js' ],
+        extensions: [ '.ts', '.js' ],
       },
       devtool: "source-map",
       module: {
