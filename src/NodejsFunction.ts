@@ -134,7 +134,8 @@ export class NodejsFunction extends lambda.Function {
       entry: "${entryFullPath}",
       target: "node",
       resolve: {
-        modules: ["node_modules", "."]
+        modules: ["node_modules", "."],
+        extensions: [ '.ts', '.js' ],
       },
       devtool: "source-map",
       module: {
