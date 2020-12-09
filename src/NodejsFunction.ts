@@ -123,17 +123,20 @@ export class NodejsFunction extends lambda.Function {
       };
     }, {});
 
-    const nodeifyPath = (path: string) => path.replace(/\\/g, '\\\\');
+    // NodeJs reserves '\' as an escape char; but pluginsPaths etc are inlined directly in the
+    // TemplateString below, so will contain this escape character on paths computed when running
+    // the Construct on a Windows machine, and so we need to escape these chars before writing them
+    const escapePathForNodeJs = (path: string) => path.replace(/\\/g, '\\\\');
 
     const webpackConfiguration = `
     const { builtinModules } = require("module");
     const { NormalModuleReplacementPlugin } = require("${
-      nodeifyPath(pluginsPaths["webpack"])
+      escapePathForNodeJs(pluginsPaths["webpack"])
     }");
 
     module.exports = {
       mode: "none",
-      entry: "${nodeifyPath(entryFullPath)}",
+      entry: "${escapePathForNodeJs(entryFullPath)}",
       target: "node",
       resolve: {
         modules: ["node_modules", "."],
@@ -146,12 +149,12 @@ export class NodejsFunction extends lambda.Function {
             test: /\\.js$/,
             exclude: /node_modules/,
             use: {
-              loader: "${nodeifyPath(pluginsPaths["babel-loader"])}",
+              loader: "${escapePathForNodeJs(pluginsPaths["babel-loader"])}",
               options: {
                 cacheDirectory: true,
                 presets: [
                   [
-                    "${nodeifyPath(pluginsPaths["@babel/preset-env"])}",
+                    "${escapePathForNodeJs(pluginsPaths["@babel/preset-env"])}",
                     {
                       "targets": {
                         "node": "${
@@ -164,8 +167,8 @@ export class NodejsFunction extends lambda.Function {
                   ]
                 ],
                 plugins: [
-                  "${nodeifyPath(pluginsPaths["@babel/plugin-transform-runtime"])}",
-                  "${nodeifyPath(pluginsPaths["babel-plugin-source-map-support"])}"
+                  "${escapePathForNodeJs(pluginsPaths["@babel/plugin-transform-runtime"])}",
+                  "${escapePathForNodeJs(pluginsPaths["babel-plugin-source-map-support"])}"
                 ]
               }
             }
@@ -180,15 +183,15 @@ export class NodejsFunction extends lambda.Function {
       externals: [...builtinModules, "aws-sdk"],
       output: {
         filename: "[name].js",
-        path: "${nodeifyPath(outputDir)}",
+        path: "${escapePathForNodeJs(outputDir)}",
         libraryTarget: "commonjs2",
       },
       ${(props.modulesToIgnore &&
         `
       plugins: [
         new NormalModuleReplacementPlugin(
-          /${nodeifyPath(props.modulesToIgnore.join("|"))}/,
-          "${nodeifyPath(pluginsPaths["noop2"])}",
+          /${escapePathForNodeJs(props.modulesToIgnore.join("|"))}/,
+          "${escapePathForNodeJs(pluginsPaths["noop2"])}",
         ),
       ]
       `) ||
