@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
 import * as process from "process";
-import { spawnSync } from "child_process";
+import * as spawn from "cross-spawn";
 import findUp from "find-up";
 
 import * as lambda from "@aws-cdk/aws-lambda";
@@ -123,15 +123,20 @@ export class NodejsFunction extends lambda.Function {
       };
     }, {});
 
+    // NodeJs reserves '\' as an escape char; but pluginsPaths etc are inlined directly in the
+    // TemplateString below, so will contain this escape character on paths computed when running
+    // the Construct on a Windows machine, and so we need to escape these chars before writing them
+    const escapePathForNodeJs = (path: string) => path.replace(/\\/g, '\\\\');
+
     const webpackConfiguration = `
     const { builtinModules } = require("module");
     const { NormalModuleReplacementPlugin } = require("${
-      pluginsPaths["webpack"]
+      escapePathForNodeJs(pluginsPaths["webpack"])
     }");
 
     module.exports = {
       mode: "none",
-      entry: "${entryFullPath}",
+      entry: "${escapePathForNodeJs(entryFullPath)}",
       target: "node",
       resolve: {
         modules: ["node_modules", "."],
@@ -144,12 +149,12 @@ export class NodejsFunction extends lambda.Function {
             test: /\\.js$/,
             exclude: /node_modules/,
             use: {
-              loader: "${pluginsPaths["babel-loader"]}",
+              loader: "${escapePathForNodeJs(pluginsPaths["babel-loader"])}",
               options: {
                 cacheDirectory: true,
                 presets: [
                   [
-                    "${pluginsPaths["@babel/preset-env"]}",
+                    "${escapePathForNodeJs(pluginsPaths["@babel/preset-env"])}",
                     {
                       "targets": {
                         "node": "${
@@ -162,8 +167,8 @@ export class NodejsFunction extends lambda.Function {
                   ]
                 ],
                 plugins: [
-                  "${pluginsPaths["@babel/plugin-transform-runtime"]}",
-                  "${pluginsPaths["babel-plugin-source-map-support"]}"
+                  "${escapePathForNodeJs(pluginsPaths["@babel/plugin-transform-runtime"])}",
+                  "${escapePathForNodeJs(pluginsPaths["babel-plugin-source-map-support"])}"
                 ]
               }
             }
@@ -178,15 +183,15 @@ export class NodejsFunction extends lambda.Function {
       externals: [...builtinModules, "aws-sdk"],
       output: {
         filename: "[name].js",
-        path: "${outputDir}",
+        path: "${escapePathForNodeJs(outputDir)}",
         libraryTarget: "commonjs2",
       },
       ${(props.modulesToIgnore &&
         `
       plugins: [
         new NormalModuleReplacementPlugin(
-          /${props.modulesToIgnore.join("|")}/,
-          "${pluginsPaths["noop2"]}",
+          /${escapePathForNodeJs(props.modulesToIgnore.join("|"))}/,
+          "${escapePathForNodeJs(pluginsPaths["noop2"])}",
         ),
       ]
       `) ||
@@ -196,12 +201,12 @@ export class NodejsFunction extends lambda.Function {
     fs.writeFileSync(webpackConfigPath, webpackConfiguration);
 
     // to implement cache, create a script that uses webpack API, store cache in a file with JSON.stringify, based on entry path key then reuse it
-    const webpack = spawnSync(webpackBinPath, ["--config", webpackConfigPath], {
+    const webpack = spawn.sync(webpackBinPath, ["--config", webpackConfigPath], {
       cwd: process.cwd(),
     });
 
     if (webpack.status !== 0) {
-      console.error("webpack had an error when bundling.");
+      console.error(`webpack had an error when bundling. Return status was ${webpack.status}`);
       console.error(
         webpack?.output?.map(out => {
           return out?.toString();
