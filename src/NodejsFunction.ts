@@ -1,12 +1,12 @@
 import * as fs from "fs";
-import * as path from "path";
 import * as os from "os";
+import * as path from "path";
 import * as process from "process";
-import * as spawn from "cross-spawn";
-import findUp from "find-up";
 
 import * as lambda from "@aws-cdk/aws-lambda";
 import * as cdk from "@aws-cdk/core";
+import * as spawn from "cross-spawn";
+import findUp from "find-up";
 
 /**
  * Properties for a NodejsFunction
@@ -95,53 +95,61 @@ export class NodejsFunction extends lambda.Function {
     );
     const webpackConfigPath = path.join(outputDir, "webpack.config.js");
 
-    // The code below is mostly to handle cases where this module is used through
-    // yarn link. I think otherwise just using require.resolve and passing just the babel plugin
-    // names would have worked.
+    const webpackBinPath = require.resolve("webpack-cli/bin/cli.js", {
+      paths: [__dirname],
+    });
 
-    const webpackBinPath = require.resolve("webpack-cli");
-
-    const plugins = [
-      "webpack",
-      "babel-loader",
-      "@babel/preset-env",
-      "@babel/plugin-transform-runtime",
-      "babel-plugin-source-map-support",
-      "noop2",
-    ];
     const pluginsPath = path.join(
       webpackBinPath.slice(0, webpackBinPath.lastIndexOf("/node_modules")),
       "node_modules",
     );
-    const pluginsPaths: any = plugins.reduce(function(acc, pluginName) {
-      return {
-        [pluginName]: findUp.sync(pluginName, {
-          type: "directory",
-          cwd: pluginsPath,
-        }),
-        ...acc,
-      };
-    }, {});
+
+    const pluginsPaths = {
+      webpack: findModulePath("webpack", pluginsPath),
+      "babel-loader": findModulePath("babel-loader", pluginsPath),
+      "@babel/preset-env": findModulePath("@babel/preset-env", pluginsPath),
+      "@babel/plugin-transform-runtime": findModulePath(
+        "@babel/plugin-transform-runtime",
+        pluginsPath,
+      ),
+      "babel-plugin-source-map-support": findModulePath(
+        "babel-plugin-source-map-support",
+        pluginsPath,
+      ),
+      noop2: findModulePath("noop2", pluginsPath),
+      "terser-webpack-plugin": findModulePath(
+        "terser-webpack-plugin",
+        pluginsPath,
+      ),
+    };
 
     // NodeJs reserves '\' as an escape char; but pluginsPaths etc are inlined directly in the
     // TemplateString below, so will contain this escape character on paths computed when running
     // the Construct on a Windows machine, and so we need to escape these chars before writing them
-    const escapePathForNodeJs = (path: string) => path.replace(/\\/g, '\\\\');
+    const escapePathForNodeJs = (path: string) => {
+      return path.replace(/\\/g, "\\\\");
+    };
 
     const webpackConfiguration = `
     const { builtinModules } = require("module");
-    const { NormalModuleReplacementPlugin } = require("${
-      escapePathForNodeJs(pluginsPaths["webpack"])
-    }");
+    const { NormalModuleReplacementPlugin } = require("${escapePathForNodeJs(
+      pluginsPaths["webpack"],
+    )}");
+    const TerserPlugin = require("${escapePathForNodeJs(
+      pluginsPaths["terser-webpack-plugin"],
+    )}");
 
     module.exports = {
-      mode: "none",
+      name: "aws-lambda-nodejs-webpack",
+      mode: "production",
       entry: "${escapePathForNodeJs(entryFullPath)}",
       target: "node",
       resolve: {
-        modules: ["node_modules", "."],
-        extensions: [ '.ts', '.js' ],
+        // next line allows resolving not found modules to local versions (require("lib/log"))
+        modules: ["node_modules", "${escapePathForNodeJs(process.cwd())}"],
+        extensions: [ ".ts", ".js" ],
       },
+      context: "${escapePathForNodeJs(process.cwd())}",
       devtool: "source-map",
       module: {
         rules: [
@@ -151,6 +159,7 @@ export class NodejsFunction extends lambda.Function {
             use: {
               loader: "${escapePathForNodeJs(pluginsPaths["babel-loader"])}",
               options: {
+                cwd: "${escapePathForNodeJs(process.cwd())}",
                 cacheDirectory: true,
                 presets: [
                   [
@@ -167,18 +176,57 @@ export class NodejsFunction extends lambda.Function {
                   ]
                 ],
                 plugins: [
-                  "${escapePathForNodeJs(pluginsPaths["@babel/plugin-transform-runtime"])}",
-                  "${escapePathForNodeJs(pluginsPaths["babel-plugin-source-map-support"])}"
+                  "${escapePathForNodeJs(
+                    pluginsPaths["@babel/plugin-transform-runtime"],
+                  )}",
+                  "${escapePathForNodeJs(
+                    pluginsPaths["babel-plugin-source-map-support"],
+                  )}"
                 ]
               }
             }
           },
           {
             test: /\\.ts$/,
-            use: 'ts-loader',
+            use: {
+              loader: "${escapePathForNodeJs(
+                findModulePath("ts-loader", pluginsPath),
+              )}",
+              options: {
+                context: "${escapePathForNodeJs(process.cwd())}",
+                configFile: "${escapePathForNodeJs(
+                  path.join(process.cwd(), "tsconfig.json"),
+                )}",
+                transpileOnly: true
+              }
+            },
             exclude: /node_modules/,
           },
         ]
+      },
+      cache: {
+        type: "filesystem",
+        buildDependencies: {
+          // force the config file to be this current file, since it won't change over builds
+          // while the temporary webpack config file used would change, thus disabling webpack cache
+          config: ["${escapePathForNodeJs(__filename)}"]
+        }
+      },
+      optimization: {
+        splitChunks: {
+          cacheGroups: {
+            vendor: {
+              chunks: "all",
+              filename: "vendor.js", // put all node_modules into vendor.js
+              name: "vendor",
+              test: /node_modules/,
+            },
+          },
+        },
+        minimize: true,
+        minimizer: [new TerserPlugin({
+          include: "vendor.js" // only minify vendor.js
+        })],
       },
       externals: [...builtinModules, "aws-sdk"],
       output: {
@@ -200,13 +248,23 @@ export class NodejsFunction extends lambda.Function {
 
     fs.writeFileSync(webpackConfigPath, webpackConfiguration);
 
-    // to implement cache, create a script that uses webpack API, store cache in a file with JSON.stringify, based on entry path key then reuse it
-    const webpack = spawn.sync(webpackBinPath, ["--config", webpackConfigPath], {
-      cwd: process.cwd(),
-    });
+    // console.time("webpack");
+    const webpack = spawn.sync(
+      webpackBinPath,
+      ["--config", webpackConfigPath],
+      {
+        // we force the CWD to aws-lambda-nodejs-webpack root, otherwise webpack-cli might resolve to the
+        // user's project version (https://github.com/webpack/webpack-cli/blob/master/packages/webpack-cli/bin/cli.js)
+        cwd: path.join(__dirname, ".."),
+      },
+    );
+    // console.timeEnd("webpack");
 
     if (webpack.status !== 0) {
-      console.error(`webpack had an error when bundling. Return status was ${webpack.status}`);
+      console.error(
+        `webpack had an error when bundling. Return status was ${webpack.status}`,
+      );
+      console.error(webpack.error);
       console.error(
         webpack?.output?.map(out => {
           return out?.toString();
@@ -215,8 +273,6 @@ export class NodejsFunction extends lambda.Function {
       console.error("webpack configuration was:", webpackConfiguration);
       process.exit(1);
     }
-
-    fs.unlinkSync(webpackConfigPath);
 
     super(scope, id, {
       ...props,
@@ -236,4 +292,25 @@ export class NodejsFunction extends lambda.Function {
 
 function nodeMajorVersion(): number {
   return parseInt(process.versions.node.split(".")[0], 10);
+}
+
+// this method forces resolving plugins relative to node_modules/aws-lambda-nodejs-webpack
+// otherwise they would be resolved to the user versions / undefined versions
+function findModulePath(moduleName: string, pluginsPath: string) {
+  try {
+    return require.resolve(moduleName);
+  } catch (error) {
+    const modulePath = findUp.sync(moduleName, {
+      type: "directory",
+      cwd: pluginsPath,
+    });
+
+    if (modulePath === undefined) {
+      throw new Error(
+        `Can't find module named ${moduleName} via require.resolve or find-up`,
+      );
+    }
+
+    return modulePath;
+  }
 }
