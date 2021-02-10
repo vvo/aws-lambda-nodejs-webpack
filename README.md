@@ -54,12 +54,15 @@ export function handler(event) {
 
 ## Features
 
+- webpack 5
 - fast, [no-docker](https://github.com/aws/aws-cdk/issues/9120) CDK construct
 - lambda output only contains the necessary files, no README, tests, ...
 - bundling happens in temporary directories, it never writes in your project directory
 - source map support
-- TypeScript support (⚠️ Beta, do provide feedback in issues!)
+- TypeScript support
 - Babel support (preset-env)
+- babel & webpack caching
+- node_modules are split into a single `vendor.js` file, minified. Allowing you to debug your own code in AWS console most of the time
 
 ## Why?
 
