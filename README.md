@@ -64,6 +64,8 @@ export function handler(event) {
 - babel & webpack caching
 - node_modules are split into a single `vendor.js` file, minified. Allowing you to debug your own code in AWS console most of the time
 
+- ⚠️ the only configuration file from your project that we will read is `tsconfig.json`. Other files won't be used. If you need to reuse part of your babel configuration, please open an issue with details on your usecase.
+
 ## Why?
 
 There's already a dedicated [aws-lambda-nodejs module for CDK](https://docs.aws.amazon.com/cdk/api/latest/docs/aws-lambda-nodejs-readme.html) but I had two major issues with it:

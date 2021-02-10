@@ -160,7 +160,15 @@ export class NodejsFunction extends lambda.Function {
               loader: "${escapePathForNodeJs(pluginsPaths["babel-loader"])}",
               options: {
                 cwd: "${escapePathForNodeJs(process.cwd())}",
-                cacheDirectory: true,
+                cacheDirectory: "${escapePathForNodeJs(
+                  path.join(
+                    process.cwd(),
+                    "node_modules",
+                    ".cache",
+                    "aws-lambda-nodejs-webpack",
+                    "babel",
+                  ),
+                )}",
                 presets: [
                   [
                     "${escapePathForNodeJs(pluginsPaths["@babel/preset-env"])}",
@@ -210,7 +218,16 @@ export class NodejsFunction extends lambda.Function {
           // force the config file to be this current file, since it won't change over builds
           // while the temporary webpack config file used would change, thus disabling webpack cache
           config: ["${escapePathForNodeJs(__filename)}"]
-        }
+        },
+        cacheDirectory: "${escapePathForNodeJs(
+          path.join(
+            process.cwd(),
+            "node_modules",
+            ".cache",
+            "aws-lambda-nodejs-webpack",
+            "webpack",
+          ),
+        )}"
       },
       optimization: {
         splitChunks: {
@@ -253,9 +270,9 @@ export class NodejsFunction extends lambda.Function {
       webpackBinPath,
       ["--config", webpackConfigPath],
       {
-        // we force the CWD to aws-lambda-nodejs-webpack root, otherwise webpack-cli might resolve to the
-        // user's project version (https://github.com/webpack/webpack-cli/blob/master/packages/webpack-cli/bin/cli.js)
-        cwd: path.join(__dirname, ".."),
+        // we force CWD to the output dir to avoid being "polluted" by any babelrc or other configuration files
+        // that could mess up with our own webpack configuration. If you need to reuse your babelrc then please open an issue
+        cwd: outputDir,
       },
     );
     // console.timeEnd("webpack");
@@ -298,7 +315,7 @@ function nodeMajorVersion(): number {
 // otherwise they would be resolved to the user versions / undefined versions
 function findModulePath(moduleName: string, pluginsPath: string) {
   try {
-    return require.resolve(moduleName);
+    return require.resolve(moduleName, { paths: [__dirname] });
   } catch (error) {
     const modulePath = findUp.sync(moduleName, {
       type: "directory",
