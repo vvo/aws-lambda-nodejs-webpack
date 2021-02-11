@@ -52,7 +52,7 @@
     "find-up": "5.0.0",
     "noop2": "2.0.0",
     "source-map-support": "0.5.19",
-    "ts-loader": "8.0.16",
+    "ts-loader": "8.0.17",
     "webpack": "5.21.2",
     "webpack-cli": "4.5.0"
   },
@@ -69,7 +69,7 @@
     "semantic-release-cli": "5.4.3",
     "tsdx": "0.14.1",
     "tslib": "2.1.0",
-    "typescript": "4.1.4"
+    "typescript": "4.1.5"
   },
   "peerDependencies": {
     "@aws-cdk/aws-lambda": "^1.54.0",

@@ -62,7 +62,7 @@ export function handler(event) {
 - TypeScript support
 - Babel support (preset-env)
 - babel & webpack caching
-- node_modules are split into a single `vendor.js` file, minified. Allowing you to debug your own code in AWS console most of the time
+- node_modules are split into a single `vendor.js` file. Allowing you to debug your own code in AWS console most of the time
 
 - ⚠️ the only configuration file from your project that we will read is `tsconfig.json`. Other files won't be used. If you need to reuse part of your babel configuration, please open an issue with details on your usecase.
 

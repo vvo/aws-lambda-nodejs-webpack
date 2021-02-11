@@ -141,7 +141,7 @@ export class NodejsFunction extends lambda.Function {
 
     module.exports = {
       name: "aws-lambda-nodejs-webpack",
-      mode: "production",
+      mode: "none",
       entry: "${escapePathForNodeJs(entryFullPath)}",
       target: "node",
       resolve: {
@@ -159,6 +159,7 @@ export class NodejsFunction extends lambda.Function {
             use: {
               loader: "${escapePathForNodeJs(pluginsPaths["babel-loader"])}",
               options: {
+                babelrc: false, // do not use babelrc when present (could pollute lambda configuration)
                 cwd: "${escapePathForNodeJs(process.cwd())}",
                 cacheDirectory: "${escapePathForNodeJs(
                   path.join(
@@ -180,6 +181,7 @@ export class NodejsFunction extends lambda.Function {
                       },
                       loose: true,
                       bugfixes: true,
+                      ignoreBrowserslistConfig: true // do not use browser list configuration, we build for node X that's it
                     },
                   ]
                 ],
@@ -205,7 +207,18 @@ export class NodejsFunction extends lambda.Function {
                 configFile: "${escapePathForNodeJs(
                   path.join(process.cwd(), "tsconfig.json"),
                 )}",
-                transpileOnly: true
+                transpileOnly: true,
+                // from: https://www.npmjs.com/package/@tsconfig/node12
+                compilerOptions: {
+                  lib: ["es2019", "es2020.promise", "es2020.bigint", "es2020.string"],
+                  module: "commonjs",
+                  target: "es2019",
+                  baseUrl: ".",
+                  strict: true,
+                  esModuleInterop: true,
+                  skipLibCheck: true,
+                  forceConsistentCasingInFileNames: true
+                }
               }
             },
             exclude: /node_modules/,
@@ -215,9 +228,9 @@ export class NodejsFunction extends lambda.Function {
       cache: {
         type: "filesystem",
         buildDependencies: {
-          // force the config file to be this current file, since it won't change over builds
-          // while the temporary webpack config file used would change, thus disabling webpack cache
-          config: ["${escapePathForNodeJs(__filename)}"]
+          config: [__filename, "${escapePathForNodeJs(
+            path.join(process.cwd(), "tsconfig.json"),
+          )}"]
         },
         cacheDirectory: "${escapePathForNodeJs(
           path.join(
@@ -229,6 +242,9 @@ export class NodejsFunction extends lambda.Function {
           ),
         )}"
       },
+      // note: we specifically do not minify our code for Node.js
+      // I have had horrible experience with code being minified for ES5 that would break on Node 12
+      // If you have a good minifier that can minify to target Node 12 then open a PR
       optimization: {
         splitChunks: {
           cacheGroups: {
@@ -240,10 +256,6 @@ export class NodejsFunction extends lambda.Function {
             },
           },
         },
-        minimize: true,
-        minimizer: [new TerserPlugin({
-          include: "vendor.js" // only minify vendor.js
-        })],
       },
       externals: [...builtinModules, "aws-sdk"],
       output: {
@@ -265,7 +277,7 @@ export class NodejsFunction extends lambda.Function {
 
     fs.writeFileSync(webpackConfigPath, webpackConfiguration);
 
-    // console.time("webpack");
+    console.time("aws-lambda-nodejs-webpack");
     const webpack = spawn.sync(
       webpackBinPath,
       ["--config", webpackConfigPath],
@@ -275,7 +287,7 @@ export class NodejsFunction extends lambda.Function {
         cwd: outputDir,
       },
     );
-    // console.timeEnd("webpack");
+    console.timeEnd("aws-lambda-nodejs-webpack");
 
     if (webpack.status !== 0) {
       console.error(
