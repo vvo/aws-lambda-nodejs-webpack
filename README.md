@@ -64,8 +64,6 @@ export function handler(event) {
 - babel & webpack caching
 - node_modules are split into a single `vendor.js` file. Allowing you to debug your own code in AWS console most of the time
 
-- ⚠️ the only configuration file from your project that we will read is `tsconfig.json`. Other files won't be used. If you need to reuse part of your babel configuration, please open an issue with details on your usecase.
-
 ## Why?
 
 There's already a dedicated [aws-lambda-nodejs module for CDK](https://docs.aws.amazon.com/cdk/api/latest/docs/aws-lambda-nodejs-readme.html) but I had two major issues with it:
@@ -75,30 +73,11 @@ There's already a dedicated [aws-lambda-nodejs module for CDK](https://docs.aws.
 
 I want to be clear: I respect a LOT the work of the CDK team, and especially [@jogold](https://github.com/jogold/), author of aws-lambda-nodejs) that helped me a lot into debugging performance issues and explaining to me how everything works.
 
-## Roadmap
+## Caveats
 
-This is a list of features I thought could be interesting to users. If you need on of them, please contribute to the project.
+⚠️ the only configuration file from your project that we will read is `tsconfig.json` (not including compilerOptions, which are overwritten using https://www.npmjs.com/package/@tsconfig/node12).
 
-- [ ] Test/Get feedback on TypeScript support
-- [ ] Get feedback on monorepo support
-- [ ] Allow passing webpack/babel options/a function that can update the full webpack configuration
-- [ ] Allow native modules/passing externals, with option `nativeModules` or `externals`. They would have to be installed into a temp folder with `npm_config_arch` and `npm_config_platform` and aliased in webpack configuration/or considered as externals. Externals and nativeModules seems related options but may be completely different
-- [ ] Use [jsii](https://github.com/aws/jsii) to build the construct for other languages
-- [ ] Add tests
-- [ ] (if current way buggy): force people to provide aliases instead of considering cwd as base node_module
-- [ ] Allow usage without the need of `entry`: `new NodejsFunction(this, "slack-notifications-lambda");` that would mimic https://docs.aws.amazon.com/cdk/api/latest/docs/aws-lambda-nodejs-readme.html#nodejs-function
-- [ ]
-- [x] Generate a bundle where entry is moved to /main.js
-- [x] Allow using TypeScript
-- [x] use webpack and babel cache
-- [x] remove webpackconfig from bundle
-- [x] pass runtime to babel target
-- [x] cdk synth generates different builds even when the lambda code does not changes, issue?
-- [x] Allow using babel, if you need preset-env
-- [x] add babel preset env by default
-- [ ] ~add bundling timing information to output console~ note: this would pollute cdk synth
-- [ ] ~Ask CDK team if this could live under their repositories~ Better be just community based
-- [ ] Other ideas? Open an issue
+Other files won't be used (example: .babelrc). If you need to reuse part of your babel configuration, please open an issue with details on your usecase so we can build the best API for how to do this.
 
 ## How to make changes and test locally
 
@@ -113,10 +92,6 @@ yarn start
 yarn link aws-lambda-nodejs-webpack
 # cdk commands will now use your local aws-lambda-nodejs-webpack
 ```
-
-## WTF happened to the rollup version?
-
-In case you starred this project early on, it was previously using [rollup.js](https://rollupjs.org/) to build lambdas. After hitting roadblocks along the way, for example rollup cannot handle well circular dependencies well, I decided to stop trying to use rollup. Rollup is great to build libraries, but not so great to build web applications. And lambdas are closer to web applications bundling than libraries.
 
 ## Thanks
 
