@@ -45,6 +45,11 @@ export interface NodejsFunctionProps extends lambda.FunctionOptions {
   readonly modulesToIgnore?: string[];
 
   /**
+   * Externals not to be bundled with your lambda, default to all Node.js builtin modules and aws-sdk. Modules I use this for: @sentry/serverless for example
+   */
+  readonly externals?: ["aws-sdk"];
+
+  /**
    * Whether to automatically reuse TCP connections when working with the AWS
    * SDK for JavaScript.
    *
@@ -82,6 +87,9 @@ export class NodejsFunction extends lambda.Function {
     if (!fs.existsSync(entryFullPath)) {
       throw new Error(`Cannot find entry file at ${entryFullPath}`);
     }
+
+    const userExternals = props.externals ?? [];
+    const defaultExternals = ["aws-sdk"];
 
     const handler = props.handler ?? "handler";
     const defaultRunTime =
@@ -257,7 +265,10 @@ export class NodejsFunction extends lambda.Function {
           },
         },
       },
-      externals: [...builtinModules, "aws-sdk"],
+      externals: [...builtinModules, ...${JSON.stringify([
+        ...defaultExternals,
+        ...userExternals,
+      ])}],
       output: {
         filename: "[name].js",
         path: "${escapePathForNodeJs(outputDir)}",
@@ -277,7 +288,7 @@ export class NodejsFunction extends lambda.Function {
 
     fs.writeFileSync(webpackConfigPath, webpackConfiguration);
 
-    console.time("aws-lambda-nodejs-webpack");
+    console.time(`aws-lambda-nodejs-webpack-${props.entry}`);
     const webpack = spawn.sync(
       webpackBinPath,
       ["--config", webpackConfigPath],
@@ -287,7 +298,7 @@ export class NodejsFunction extends lambda.Function {
         cwd: outputDir,
       },
     );
-    console.timeEnd("aws-lambda-nodejs-webpack");
+    console.timeEnd(`aws-lambda-nodejs-webpack-${props.entry}`);
 
     if (webpack.status !== 0) {
       console.error(
