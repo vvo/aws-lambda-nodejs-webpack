@@ -28,8 +28,8 @@ export interface NodejsFunctionProps extends lambda.FunctionOptions {
    * The runtime environment. Only runtimes of the Node.js family are
    * supported.
    *
-   * @default - `NODEJS_12_X` if `process.versions.node` >= '12.0.0',
-   * `NODEJS_10_X` otherwise.
+   * @default - `NODEJS_14_X` if `process.versions.node` >= '14.0.0',
+   * `NODEJS_12_X` otherwise.
    */
   readonly runtime?: lambda.Runtime;
 
@@ -85,9 +85,9 @@ export class NodejsFunction extends lambda.Function {
 
     const handler = props.handler ?? "handler";
     const defaultRunTime =
-      nodeMajorVersion() >= 12
-        ? lambda.Runtime.NODEJS_12_X
-        : lambda.Runtime.NODEJS_10_X;
+      nodeMajorVersion() >= 14
+        ? lambda.Runtime.NODEJS_14_X
+        : lambda.Runtime.NODEJS_12_X;
     const runtime = props.runtime ?? defaultRunTime;
 
     const outputDir = fs.mkdtempSync(
@@ -208,11 +208,11 @@ export class NodejsFunction extends lambda.Function {
                   path.join(process.cwd(), "tsconfig.json"),
                 )}",
                 transpileOnly: true,
-                // from: https://www.npmjs.com/package/@tsconfig/node12
+                // from: https://www.npmjs.com/package/@tsconfig/node14
                 compilerOptions: {
-                  lib: ["es2019", "es2020.promise", "es2020.bigint", "es2020.string"],
+                  lib: ["es2020"],
                   module: "commonjs",
-                  target: "es2019",
+                  target: "es2020",
                   baseUrl: ".",
                   strict: true,
                   esModuleInterop: true,

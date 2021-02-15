@@ -55,6 +55,7 @@ export function handler(event) {
 ## Features
 
 - webpack 5
+- compiles and deploys to Node.js 14.x by default
 - fast, [no-docker](https://github.com/aws/aws-cdk/issues/9120) CDK construct
 - lambda output only contains the necessary files, no README, tests, ...
 - bundling happens in temporary directories, it never writes in your project directory
