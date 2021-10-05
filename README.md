@@ -1,4 +1,4 @@
-**Update from the maintainer**: Unless you have a good reason to use Webpack with AWS lambda, you should use the default CDK construct (https://docs.aws.amazon.com/cdk/api/latest/docs/aws-lambda-nodejs-readme.html). It works really well and is even faster than this Webpack based project, thanks to esbuild.
+**Update from the maintainer**: Unless you have a good reason to use Webpack with AWS lambda, you should use the default CDK construct (https://docs.aws.amazon.com/cdk/api/latest/docs/aws-lambda-nodejs-readme.html). It works really well and is even faster than this Webpack based project, thanks to esbuild. I initially wrote this Webpack based construct because, at the time, the official Node.js construct was very slow. Since September 2021 I now use the default Node.js construct.
 
 Consider this package deprecated as I won't be maintaining it, but it works.
 
