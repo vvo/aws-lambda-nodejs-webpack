@@ -1,3 +1,7 @@
+**Update from the maintainer**: Unless you have a good reason to use Webpack with AWS lambda, you should use the default CDK construct (https://docs.aws.amazon.com/cdk/api/latest/docs/aws-lambda-nodejs-readme.html). It works really well and is even faster than this Webpack based project, thanks to esbuild.
+
+Consider this package deprecated as I won't be maintaining it, but it works.
+
 # aws-lambda-nodejs-webpack ![npm](https://img.shields.io/npm/v/aws-lambda-nodejs-webpack) [![Mentioned in Awesome CDK](https://awesome.re/mentioned-badge.svg)](https://github.com/eladb/awesome-cdk) [![GitHub license](https://img.shields.io/github/license/vvo/aws-lambda-nodejs-webpack?style=flat)](https://github.com/vvo/aws-lambda-nodejs-webpack/blob/master/LICENSE) [![Tests](https://github.com/vvo/aws-lambda-nodejs-webpack/workflows/CI/badge.svg)](https://github.com/vvo/aws-lambda-nodejs-webpack/actions) ![npm](https://img.shields.io/npm/dy/aws-lambda-nodejs-webpack)
 
 ---
